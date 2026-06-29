@@ -1,0 +1,140 @@
+# corpora-atlas — configuration example.
+#
+# Copy to ~/.config/corpora-atlas/config.yaml and customize.
+# Every value shown is a fabricated placeholder.
+#
+# Architecture: config.py loads this file at import time. All other modules
+# (daemon.py, gd.py, kiwix.py, aard2.py, tokens.py, __main__.py, server.py,
+# mediawiki.py) read their settings from config.py's module-level exports.
+# No hardcoded paths, ports, or URLs exist anywhere else in the source.
+
+
+# ── Runtime paths ──────────────────────────────────────────────────
+# The daemon creates a Unix socket at `socket` for IPC (toggle/cycle commands).
+# State is a JSON file at `state`, locked via flock on `lock`.
+# `pid` records the daemon's PID. `output` is used by CLI multi-file extraction.
+paths:
+  socket: /tmp/corpora-atlas.sock
+  state:  /tmp/corpora-atlas.state
+  lock:   /tmp/corpora-atlas.lock
+  pid:    /tmp/corpora-atlas.pid
+  output: /tmp/corpus
+
+
+# ── Server endpoints ────────────────────────────────────────────────
+# These three services must be running for full functionality.
+# GoldenDict exposes a Chrome DevTools Protocol port for page extraction.
+# Kiwix-serve and Aard2-web expose HTTP APIs for ZIM/SLOB archives.
+servers:
+  gd_cdp: localhost:18123
+  kiwix:  http://localhost:8077
+  aard2:  http://127.0.0.1:8013
+
+
+# ── Web UI ──────────────────────────────────────────────────────────
+# `corpora-atlas --serve` starts a local HTTP server with three side-by-side
+# iframes (GoldenDict, Kiwix, Aard2). For humans only — agents use the CLI.
+webui:
+  port: 8090
+  host: 127.0.0.1
+
+
+# ── Daemon ──────────────────────────────────────────────────────────
+# Clipboard polling: checks every `poll_interval` seconds. Rejects clipboard
+# lines longer than `max_query_len` characters.
+daemon:
+  poll_interval: 0.5
+  max_query_len: 50
+
+
+# ── GoldenDict ──────────────────────────────────────────────────────
+# `binary` is the GoldenDict executable name or path.
+# `config_path` is the GD XML config used to map numeric group IDs (from CDP
+# target URLs) back to human-readable group names. `cdp_timeout` is the HTTP
+# timeout for fetching the CDP target list.
+gd:
+  binary: goldendict
+  config_path: ~/.goldendict/config
+  cdp_timeout: 3
+
+
+# ── Language → group chains ─────────────────────────────────────────
+#
+# When the daemon detects a clipboard change or the user presses the cycle
+# keybind, lang.py's triage() inspects the word's Unicode range and returns
+# a primary key (e.g. "chinese"). The daemon routes the word through the
+# corresponding chain, always starting at chain[0] on auto-lookup.
+#
+# The fallback chains below are consumed by lang.py → tokens.get_all_fallbacks().
+# Keys must match the names returned by triage() (see lang.py source). If a
+# script family has no dedicated triage branch, it falls through to "other".
+#
+# Every value is a fabricated placeholder group name — replace with your
+# GoldenDict group names.
+
+fallback:
+  # CJK Unified Ideographs (0x4E00–0x9FFF)
+  chinese:   [ZH, Z2, Z3]
+
+  # Hiragana + Katakana (0x3040–0x30FF)
+  japanese:  [JA, J2, Z2]
+
+  # Basic Latin + Latin Extended (0x0041–0x02AF)
+  english:   [EN, EN2, EN3]
+
+  # Cyrillic (0x0400–0x052F, 0x2DE0–0x2DFF, 0xA640–0xA69F)
+  cyrillic:  [RU]
+
+  # Greek + Coptic (0x0370–0x03FF, 0x1F00–0x1FFF)
+  greek:     [GR]
+
+  # Hangul syllables (0xAC00–0xD7AF)
+  hangul:    [KR]
+
+  # Arabic (0x0600–0x06FF, 0x0750–0x077F, 0xFB50–0xFDFF, 0xFE70–0xFEFF)
+  # Hebrew (0x0590–0x05FF) and Syriac (0x0700–0x074F) also route here.
+  # NOTE: lang.py currently lacks dedicated _in_range() checks for Semitic
+  # scripts — they fall through to "other" below. To activate this chain,
+  # add Arabic + Hebrew ranges to lang.py and a triage() branch.
+  semitic:   [AR, HE]
+
+  # Brahmic family: Devanagari (0x0900–0x097F), Bengali (0x0980–0x09FF),
+  # Gurmukhi (0x0A00–0x0A7F), Tamil (0x0B80–0x0BFF), etc.
+  # NOTE: lang.py currently routes all Brahmic scripts through the "other"
+  # catch-all (cp > 0x0600 in is_alpha). To activate per-script chains,
+  # add the ranges to lang.py and dedicated triage() branches.
+  brahmic:   [DV, BN, TM]
+
+  # Catch-all for everything else (symbols, emoji, unsupported scripts).
+  other:     [OT]
+
+
+# ── Kiwix ZIM shorthands ────────────────────────────────────────────
+# Maps a short name (used with -z) to the real .zim filename served by
+# kiwix-serve. Add one entry per ZIM archive you've downloaded.
+# Usage: corpora-atlas --kiwix -z <shorthand> <query>
+kiwix:
+  example-en-wikipedia:  wikipedia_en_all_2024-01.zim
+  example-zh-wikisource: wikisource_zh_all_2024-01.zim
+  example-gutenberg:     gutenberg_en_2023.zim
+
+
+# ── Aard2 SLOB shorthands ───────────────────────────────────────────
+# Maps a short name (used with -s) to the real .slob filename served by
+# aard2-web. Add one entry per SLOB archive you've downloaded.
+# Usage: corpora-atlas --aard2 -s <shorthand> <query>
+aard2:
+  example-en-wiki:  enwiki-20240101.slob
+  example-en-wikt:  enwiktionary-20240101.slob
+
+
+# ── Live MediaWiki API ──────────────────────────────────────────────
+# These sites are queried via action=parse (returns rendered parsoid HTML).
+# The base URL is the /w directory (api.php parent). Add any MediaWiki site.
+# Usage: corpora-atlas --mw <key> <title>
+#   corpora-atlas --mw en.wikipedia --lean-toc "Philosophy"
+#   corpora-atlas --mw en.wikipedia --lean-section "Etymology" "Philosophy"
+mediawiki:
+  sites:
+    en.wikipedia:  https://en.wikipedia.org/w
+    fr.wikipedia:  https://fr.wikipedia.org/w

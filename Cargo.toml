@@ -1,0 +1,33 @@
+[package]
+name = "corpora-atlas"
+version = "1.0.0"
+edition = "2024"
+description = "Unified terminal-based lookup tool for dictionaries, encyclopedias, and wikis"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"
+serde_json = "1"
+clap = { version = "4", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.12", features = ["json"] }
+tokio-tungstenite = "0.24"
+scraper = "0.20"
+regex = "1"
+fs2 = "0.4"
+thiserror = "2"
+anyhow = "1"
+async-trait = "0.1"
+dirs = "5"
+futures-util = "0.3"
+unicode_categories = "0.1"
+html-escape = "0.2"
+
+[dev-dependencies]
+assert_cmd = "2"
+predicates = "3"
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1
