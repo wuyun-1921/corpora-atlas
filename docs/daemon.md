@@ -38,16 +38,16 @@ Unix socket at `config.paths.socket`. JSON protocol, newline-delimited.
 
 ```sh
 # Toggle clipboard monitoring
-corpora-atlas --toggle-clipboard
+corpora-atlas --toggle-gd-auto-clip
 
 # Cycle groups
-corpora-atlas --cycle
+corpora-atlas --gd-clip
 
 # Cycle with custom text
-corpora-atlas --cycle --clip "test"
+corpora-atlas --gd-clip --clip "test"
 
 # Toggle focus
-corpora-atlas --toggle-focus
+corpora-atlas --toggle-gd-auto-focus
 ```
 
 ### Responses

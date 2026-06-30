@@ -7,13 +7,13 @@ async fn main() -> anyhow::Result<()> {
     let args = <Cli as clap::Parser>::parse();
 
     if let Err(e) = config::Config::init() {
-        if !args.daemon && !args.toggle_clipboard && !args.cycle && !args.toggle_focus {
+        if !args.daemon && !args.toggle_gd_auto_clip && !args.gd_clip && !args.toggle_gd_auto_focus {
             eprintln!("Error: {e}");
             std::process::exit(1);
         }
     }
 
-    if args.toggle_clipboard {
+    if args.toggle_gd_auto_clip {
         let resp = ipc::send_daemon("toggle", None).await;
         match resp {
             Ok(v) => {
@@ -28,7 +28,7 @@ async fn main() -> anyhow::Result<()> {
         }
     }
 
-    if args.toggle_focus {
+    if args.toggle_gd_auto_focus {
         let resp = ipc::send_daemon("toggle_focus", None).await;
         match resp {
             Ok(v) => {
@@ -48,7 +48,7 @@ async fn main() -> anyhow::Result<()> {
         return d.run().await.map_err(|e| anyhow::anyhow!("{e}"));
     }
 
-    if args.cycle {
+    if args.gd_clip {
         let socket_path = config::Config::global().paths.socket.clone();
         if !socket_path.exists() {
             tokio::spawn(async {

@@ -64,11 +64,11 @@ pub struct Cli {
     #[arg(long)]
     pub daemon: bool,
     #[arg(long)]
-    pub toggle_clipboard: bool,
+    pub toggle_gd_auto_clip: bool,
     #[arg(long)]
-    pub toggle_focus: bool,
+    pub toggle_gd_auto_focus: bool,
     #[arg(long)]
-    pub cycle: bool,
+    pub gd_clip: bool,
     #[arg(long)]
     pub clip: Option<String>,
     #[arg(long)]

@@ -58,13 +58,13 @@ corpora-atlas --mw en.wikipedia Philosophy
 corpora-atlas --daemon &
 
 # Toggle clipboard monitoring on/off
-corpora-atlas --toggle-clipboard
+corpora-atlas --toggle-gd-auto-clip
 
 # Cycle through dictionary groups for current word
-corpora-atlas --cycle
+corpora-atlas --gd-clip
 
 # Toggle auto-focus GoldenDict window
-corpora-atlas --toggle-focus
+corpora-atlas --toggle-gd-auto-focus
 ```
 
 ### Lean mode (filtered reading)

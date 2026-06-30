@@ -71,10 +71,10 @@ Multiple backends can be combined; they execute sequentially.
 | Flag | Description |
 |------|-------------|
 | `--daemon` | Start the daemon process (foreground) |
-| `--toggle-clipboard` | Toggle clipboard monitoring (auto-starts daemon) |
-| `--toggle-focus` | Toggle GoldenDict auto-focus feature |
-| `--cycle` | Cycle to next GD dictionary group for current word |
-| `--clip <TEXT>` | Override clipboard content for --cycle |
+| `--toggle-gd-auto-clip` | Toggle clipboard monitoring (auto-starts daemon) |
+| `--toggle-gd-auto-focus` | Toggle GoldenDict auto-focus feature |
+| `--gd-clip` | Cycle to next GD dictionary group for current word |
+| `--clip <TEXT>` | Override clipboard content for --gd-clip |
 
 ## Examples
 
@@ -135,16 +135,16 @@ corpora-atlas --kiwix -z wikisource-en --lean-section _lead "Philosophy"
 corpora-atlas --daemon &
 
 # Toggle clipboard monitoring
-corpora-atlas --toggle-clipboard
+corpora-atlas --toggle-gd-auto-clip
 
 # Cycle groups
-corpora-atlas --cycle
+corpora-atlas --gd-clip
 
 # Cycle with custom text
-corpora-atlas --cycle --clip "test"
+corpora-atlas --gd-clip --clip "test"
 
 # Toggle auto-focus
-corpora-atlas --toggle-focus
+corpora-atlas --toggle-gd-auto-focus
 ```
 
 ### Combining backends
