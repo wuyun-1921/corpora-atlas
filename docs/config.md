@@ -70,7 +70,7 @@ gd:
 Language script detection routes words through GoldenDict group chains.
 
 Key names must match the script detection output in `lang.rs`:
-`chinese`, `japanese`, `english`, `cyrillic`, `greek`, `hangul`, `semitic`, `brahmic`, `other`
+`chinese`, `japanese`, `latin`, `cyrillic`, `greek`, `hangul`, `semitic`, `brahmic`, `other`
 
 Values are ordered lists of GD group names. The daemon starts at `[0]` and cycles
 through on repeated lookups of the same word.
@@ -79,7 +79,7 @@ through on repeated lookups of the same word.
 fallback:
   chinese:  [ZH, Z2, Z3]
   japanese: [JA, J2, Z2]
-  english:  [EN, EN2, EN3]
+  latin:    [EN, EN2, EN3]
   cyrillic: [RU]
   greek:    [GR]
   hangul:   [KR]

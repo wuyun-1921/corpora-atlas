@@ -69,7 +69,7 @@ corpora-atlas --toggle-gd-auto-focus
 ### Clipboard actions (requires daemon)
 
 ```sh
-# Read clipboard word, look it up in GD, cycle dictionary group
+# Look up clipboard text in GD, cycling through fallback chain for detected script
 corpora-atlas --gd-clip
 
 # Same with custom text (instead of clipboard)

@@ -23,7 +23,7 @@ pub async fn handle_connection(mut stream: tokio::net::UnixStream) -> Result<()>
     match action {
         "cycle" => {
             let clip = req.get("clip").and_then(|c| c.as_str()).unwrap_or("");
-            crate::daemon::cycle::cmd_next(clip).await;
+            crate::daemon::gd_clip::cmd_next(clip).await;
             let _ = stream.write_all(b"{\"status\":\"ok\"}\n").await;
         }
         "toggle" => {

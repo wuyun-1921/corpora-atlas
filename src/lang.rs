@@ -9,7 +9,7 @@ pub enum Script {
     Cyrillic,
     Greek,
     Hangul,
-    English,
+    Latin,
     Other,
 }
 
@@ -46,7 +46,7 @@ const SCRIPT_RANGES: &[(Script, &[(u32, u32)])] = &[
     (Script::Cyrillic, CYRILLIC),
     (Script::Greek, GREEK),
     (Script::Hangul, HANGUL),
-    (Script::English, LATIN),
+    (Script::Latin, LATIN),
 ];
 
 pub fn triage(text: &str) -> (Script, Vec<String>) {
@@ -62,7 +62,7 @@ pub fn triage(text: &str) -> (Script, Vec<String>) {
             Script::Cyrillic => "cyrillic",
             Script::Greek => "greek",
             Script::Hangul => "hangul",
-            Script::English => "english",
+            Script::Latin => "latin",
             Script::Other => "other",
         },
     };

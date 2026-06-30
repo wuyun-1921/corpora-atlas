@@ -66,7 +66,7 @@ URLs with `/api.php` suffix are normalized automatically.
 | `--daemon` | Start the daemon process in the foreground |
 | `--toggle-gd-auto-clip` | Toggle clipboard monitoring (auto-starts daemon if not running) |
 | `--toggle-gd-auto-focus` | Toggle GoldenDict auto-focus feature (daemon must be running) |
-| `--gd-clip` | Read clipboard word, look it up in GD, optionally cycle the dictionary group (auto-starts daemon if not running) |
+| `--gd-clip` | Look up clipboard text in GD, cycling through dictionary groups defined by the fallback chain for the detected script (auto-starts daemon if not running) |
 | `--clip <TEXT>` | Override clipboard content for `--gd-clip` |
 | `--serve` | Start web UI server (not yet implemented) |
 

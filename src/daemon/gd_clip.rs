@@ -15,7 +15,7 @@ pub async fn cmd_next(clip_override: &str) {
 
     let (script, chain) = crate::lang::triage(&query);
 
-    if script == crate::lang::Script::English {
+    if script == crate::lang::Script::Latin {
         let gd_backend = crate::backends::gd::GdBackend;
         let gd_group = gd_backend.get_current_group().await.unwrap_or_default();
         clipboard::gd_lookup(&query, &gd_group).await;

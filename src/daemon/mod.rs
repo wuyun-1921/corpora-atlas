@@ -1,6 +1,6 @@
 pub mod ipc;
 pub mod clipboard;
-pub mod cycle;
+pub mod gd_clip;
 
 use crate::error::Result;
 

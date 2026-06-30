@@ -87,17 +87,18 @@ JSON file at `config.paths.state`, protected by `flock`:
 
 ## Cycle Logic
 
-The cycle command (`--gd-clip` or IPC `cycle`) reads a clipboard word, looks it
-up in GoldenDict, and cycles the dictionary group on repeated lookups.
+The cycle command (`--gd-clip` or IPC `cycle`) reads clipboard text, looks it
+up in GoldenDict, and cycles through the dictionary groups defined by the
+fallback chain for the detected script.
 
 CDP = Chrome DevTools Protocol, used to read GoldenDict's active group.
 
-### English text
+### Latin text
 
 Looks up in the currently active GD group (read from CDP). Does not cycle -
-English words use whatever group GD is already on.
+Latin words use whatever group GD is already on.
 
-### Non-English text
+### Non-Latin text
 
 1. Reads current GD group from CDP
 2. If GD's group was changed externally (differs from daemon state):
@@ -133,7 +134,7 @@ Script detection by Unicode codepoint ranges:
 | Hangul | `hangul` | 0xAC00-0xD7AF |
 | Semitic | `semitic` | 0x0590-0x05FF (Hebrew), 0x0600-0x06FF, 0x0750-0x077F (Arabic) |
 | Brahmic | `brahmic` | 0x0900-0x097F, 0x0980-0x09FF |
-| English | `english` | 0x0041-0x005A, 0x0061-0x007A (Latin) |
+| Latin | `latin` | 0x0041-0x005A, 0x0061-0x007A (Basic Latin + Latin Extended) |
 | Other | `other` | Everything else |
 
 ## Systemd
