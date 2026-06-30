@@ -19,13 +19,17 @@ Communicates with GoldenDict via Chrome DevTools Protocol (CDP) over WebSocket.
 | (none) | Lists dictionary names |
 | `-a` | Full content from all dictionaries |
 | `-d <dicts>` | Full content from specified dictionaries |
-| `-m` | Multi-file: writes each dict to `{output}/{query}/gd/{dict}.txt` |
+| `-m` | Multi-file: writes each dict to `{output}/{query}/gd/{safe_name}.txt` |
 | `-n` | Adds `# From <dictname>` headers |
+
+Note: without `-a`, `-d`, or `-m`, GD still runs in multi-file mode internally
+but prints results to stdout rather than writing files.
 
 ### Group Resolution
 
 GD group IDs in CDP URLs are numeric. The backend reads GD's XML config
-(`~/.goldendict/config`) to map IDs back to human-readable names.
+(configurable via `gd.config_path`, default `~/.goldendict/config`) to map
+IDs back to human-readable names.
 
 ### Dependencies
 
@@ -40,7 +44,8 @@ Queries a local `kiwix-serve` HTTP API.
 
 ### Flow
 
-1. Resolves ZIM shorthand via config (`-z wikisource-en` -> real filename)
+1. Resolves ZIM shorthand via config (`-z wikisource-en` -> real filename).
+   If shorthand is not found in config, used as-is (pass-through).
 2. HTTP GET: `{kiwix_base}/search?pattern={query}&books.name={zim}&pageLength=25&page=1`
 3. Parses results from HTML response
 
@@ -48,7 +53,7 @@ Queries a local `kiwix-serve` HTTP API.
 
 | Mode | Behavior |
 |------|----------|
-| Text | Numbered list of results with 200-char snippet truncation |
+| Text | Header line + numbered list of results with 200-char snippet truncation |
 | HTML | Raw HTML from kiwix-serve |
 
 ### Dependencies
@@ -63,7 +68,8 @@ Queries a local `aard2-web` HTTP API.
 
 ### Flow
 
-1. Resolves SLOB shorthand via config (`-s enwiki` -> real filename)
+1. Resolves SLOB shorthand via config (`-s enwiki` -> real filename).
+   If shorthand is not found in config, used as-is (pass-through).
 2. HTTP GET: `{aard2_base}/find/?key={query}`
 3. Response: JSON array with `dictLabel`, `label`, `url` fields
 
@@ -71,7 +77,7 @@ Queries a local `aard2-web` HTTP API.
 
 | Mode | Behavior |
 |------|----------|
-| Text | `[dictLabel] title -> url` per result |
+| Text | Header line + `[dictLabel] title -> url` per result |
 | HTML | Fetches full article HTML from first result's URL |
 
 ### Dependencies
@@ -82,15 +88,16 @@ Queries a local `aard2-web` HTTP API.
 
 ## MediaWiki
 
-Queries MediaWiki sites via their `api.php` REST API.
+Queries MediaWiki sites via their `api.php` action API.
 
 ### Flow
 
-1. Resolves site: if `--mw` value contains `://`, uses it directly as base URL; otherwise looks up config key (`en.wikipedia` -> `https://en.wikipedia.org/w`)
+1. Resolves site: if `--mw` value contains `://`, uses it directly as base URL
+   (strips trailing `/` and `/api.php` suffix if present); otherwise looks up
+   config key (`en.wikipedia` -> `https://en.wikipedia.org/w`).
 2. Depending on mode:
-   - **Parse** (default): `action=parse&prop=text&page={query}` - full article HTML
+   - **Parse** (default): `action=parse&prop=text&redirects&page={query}` - full article HTML
    - **Search** (`--mw-search`): `action=query&list=search` - up to 50 results
-   - **Prefix** (multi-file without search): `action=query&list=allpages` - matching titles
 
 ### Output Modes
 
@@ -101,6 +108,10 @@ Queries MediaWiki sites via their `api.php` REST API.
 | `--mw-search` | Search results with titles and snippets |
 | `--lean-toc` | Table of contents from article |
 | `--lean-section <id>` | Specific section by heading ID |
+| `--lean-text` | Convert HTML to plain text |
+
+Note: the `redirects` parameter is included in parse requests, so redirects
+are followed automatically.
 
 ### User-Agent
 

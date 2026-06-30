@@ -35,7 +35,7 @@ servers:
 
 ## Web UI
 
-Planned local HTTP server with side-by-side iframes.
+Local HTTP server with side-by-side iframes (not yet wired to the CLI).
 
 ```yaml
 webui:
@@ -43,15 +43,13 @@ webui:
   host: 127.0.0.1  # Bind address
 ```
 
-Not yet implemented.
-
 ## Daemon
 
 Clipboard polling settings.
 
 ```yaml
 daemon:
-  poll_interval: 0.5   # Seconds between clipboard checks
+  poll_interval: 0.5   # Seconds between clipboard checks (must be > 0)
   max_query_len: 50    # Max characters to process from clipboard
 ```
 
@@ -63,7 +61,7 @@ GD integration settings.
 gd:
   binary: goldendict                    # Executable name or path
   config_path: ~/.goldendict/config     # GD XML config (for group ID mapping)
-  cdp_timeout: 3                        # HTTP timeout (seconds) for CDP target discovery
+  cdp_timeout: 3                        # HTTP timeout (seconds) for CDP target discovery (must be > 0)
   window_app_id: goldendict             # WM class for wlrctl focus (optional, default: goldendict)
 ```
 
@@ -81,13 +79,13 @@ through on repeated lookups of the same word.
 fallback:
   chinese:  [ZH, Z2, Z3]
   japanese: [JA, J2, Z2]
-  english:  [M, S, R, A, V]
-  cyrillic: [Wt]
-  greek:    [Wt]
-  hangul:   [Wt]
-  semitic:  [Wt]
-  brahmic:  [Wt]
-  other:    [Wt]
+  english:  [EN, EN2, EN3]
+  cyrillic: [RU]
+  greek:    [GR]
+  hangul:   [KR]
+  semitic:  [AR, HE]
+  brahmic:  [DV, BN, TM]
+  other:    [OT]
 ```
 
 ## Kiwix

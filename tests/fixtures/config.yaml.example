@@ -3,10 +3,10 @@
 # Copy to ~/.config/corpora-atlas/config.yaml and customize.
 # Every value shown is a fabricated placeholder.
 #
-# Architecture: config.py loads this file at import time. All other modules
-# (daemon.py, gd.py, kiwix.py, aard2.py, tokens.py, __main__.py, server.py,
-# mediawiki.py) read their settings from config.py's module-level exports.
-# No hardcoded paths, ports, or URLs exist anywhere else in the source.
+# Architecture: config.rs loads this file at startup. All other modules
+# (daemon, backends, tokens, lang, html) read their settings from the
+# global Config singleton. No hardcoded paths, ports, or URLs exist
+# anywhere else in the source.
 
 
 # ── Runtime paths ──────────────────────────────────────────────────
@@ -93,14 +93,14 @@ fallback:
 
   # Arabic (0x0600–0x06FF, 0x0750–0x077F, 0xFB50–0xFDFF, 0xFE70–0xFEFF)
   # Hebrew (0x0590–0x05FF) and Syriac (0x0700–0x074F) also route here.
-  # NOTE: lang.py currently lacks dedicated _in_range() checks for Semitic
+#   NOTE: lang.rs currently lacks dedicated _in_range() checks for Semitic
   # scripts — they fall through to "other" below. To activate this chain,
   # add Arabic + Hebrew ranges to lang.py and a triage() branch.
   semitic:   [AR, HE]
 
   # Brahmic family: Devanagari (0x0900–0x097F), Bengali (0x0980–0x09FF),
   # Gurmukhi (0x0A00–0x0A7F), Tamil (0x0B80–0x0BFF), etc.
-  # NOTE: lang.py currently routes all Brahmic scripts through the "other"
+#   NOTE: lang.rs currently routes all Brahmic scripts through the "other"
   # catch-all (cp > 0x0600 in is_alpha). To activate per-script chains,
   # add the ranges to lang.py and dedicated triage() branches.
   brahmic:   [DV, BN, TM]

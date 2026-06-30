@@ -54,17 +54,26 @@ corpora-atlas --mw en.wikipedia Philosophy
 ### Daemon mode
 
 ```sh
-# Start daemon (clipboard polling + auto GD lookup)
+# Start daemon (monitoring starts disabled by default)
 corpora-atlas --daemon &
 
-# Toggle clipboard monitoring on/off
+# Enable clipboard monitoring
 corpora-atlas --toggle-gd-auto-clip
-
-# Cycle through dictionary groups for current word
-corpora-atlas --gd-clip
 
 # Toggle auto-focus GoldenDict window
 corpora-atlas --toggle-gd-auto-focus
+```
+
+`--toggle-gd-auto-clip` and `--toggle-gd-auto-focus` auto-start the daemon if not running.
+
+### Clipboard actions (requires daemon)
+
+```sh
+# Cycle through GD dictionary groups for current clipboard word
+corpora-atlas --gd-clip
+
+# Cycle with custom text (instead of clipboard)
+corpora-atlas --gd-clip --clip "test"
 ```
 
 ### Lean mode (filtered reading)
@@ -85,7 +94,7 @@ corpora-atlas --kiwix -z wikisource-en --lean-text "Philosophy"
 ```sh
 # Extract all dictionaries to separate files
 corpora-atlas --gd -a -m -n "hello"
-# Writes to /tmp/corpus/hello/gd/<dict>.txt
+# Writes to <paths.output>/hello/gd/<dict>.txt (default: /tmp/corpus/)
 ```
 
 ## Architecture
@@ -105,9 +114,10 @@ corpora-atlas CLI
   |     +-- (default)  -> GD catalog mode
   |
   +-- Daemon mode
-  |     +-- Unix socket IPC (toggle/cycle)
+  |     +-- Unix socket IPC (toggle_gd_auto_clip, toggle_gd_auto_focus, gd_clip)
   |     +-- Clipboard poll loop (wl-paste)
   |     +-- Language detection -> group chain routing
+  |     +-- DaemonState persistence (group, repeat, monitoring, focus_gd)
   |     +-- Auto GD lookup + optional window focus
   |
   +-- Web UI (--serve, not yet implemented)

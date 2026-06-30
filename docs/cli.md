@@ -10,52 +10,45 @@ corpora-atlas [FLAGS] [OPTIONS] <QUERY>...
 |-----|-------------|
 | `QUERY` | Words to look up. Multiple words joined with spaces. |
 
-## Backend Flags
-
-| Flag | Description |
-|------|-------------|
-| `--gd` | Use GoldenDict backend |
-| `--kiwix` | Use Kiwix backend |
-| `--aard2` | Use Aard2 backend |
-| `--mw <SITE>` | Use MediaWiki backend (site key from config, or any URL) |
-
 If no backend flag is given, runs GoldenDict in catalog mode (lists dictionary names).
 
 Multiple backends can be combined; they execute sequentially.
 
-## GoldenDict Options
+## GoldenDict
 
-| Flag | Short | Description |
-|------|-------|-------------|
-| `--gd` | | Enable GoldenDict backend |
-| `-g <GROUP>` | | GD group name to look up in |
-| `-d <DICTS>` | | Comma-separated dictionary names to filter |
-| `-a` | | Extract all dictionaries (full content) |
-| `-m` | | Multi-file mode: write each dict to a separate file |
-| `-n` | | Annotate output with `# From <dict>` headers |
+| Flag | Description |
+|------|-------------|
+| `--gd` | Enable GoldenDict backend |
+| `-g <GROUP>` | GD group name to look up |
+| `-d <DICTS>` | Comma-separated dictionary names to filter |
+| `-a` | Extract all dictionaries (full content) |
+| `-m` | Multi-file mode: write each dict to a separate file |
+| `-n` | Annotate output with `# From <dict>` headers |
 
-## Kiwix Options
+## Kiwix
 
-| Flag | Short | Description |
-|------|-------|-------------|
-| `--kiwix` | | Enable Kiwix backend |
-| `-z <ZIM>` | | ZIM shorthand name (required with --kiwix) |
-| `--kiwix-page <N>` | | Page number (default: 1) |
+| Flag | Description |
+|------|-------------|
+| `--kiwix` | Enable Kiwix backend |
+| `-z <ZIM>` | ZIM shorthand name (required with --kiwix) |
 
-## Aard2 Options
+## Aard2
 
-| Flag | Short | Description |
-|------|-------|-------------|
-| `--aard2` | | Enable Aard2 backend |
-| `-s <SLOB>` | | SLOB shorthand name |
+| Flag | Description |
+|------|-------------|
+| `--aard2` | Enable Aard2 backend |
+| `-s <SLOB>` | SLOB shorthand name (resolved via config, or pass-through) |
 
-## MediaWiki Options
+## MediaWiki
 
 | Flag | Description |
 |------|-------------|
 | `--mw <SITE>` | MediaWiki site key (from config) or any MediaWiki URL |
 | `--mw-search` | Use search API instead of page parse |
-| `--mw-page <N>` | Page number for search results (default: 1) |
+
+`--mw` accepts either a config key (e.g. `en.wikipedia` mapped in `config.yaml`
+under `mediawiki.sites`) or any full URL (e.g. `https://fr.wikipedia.org/w`).
+URLs with `/api.php` suffix are normalized automatically.
 
 ## Output Formatting
 
@@ -63,18 +56,23 @@ Multiple backends can be combined; they execute sequentially.
 |------|-------------|
 | `--html` | Output raw HTML instead of plain text |
 | `--lean-toc` | Extract and display table of contents |
-| `--lean-section <ID>` | Extract a specific section by ID |
-| `--lean-text` | Convert HTML to plain text (lean mode) |
+| `--lean-section <ID>` | Extract a specific section by heading ID |
+| `--lean-text` | Convert HTML to plain text |
 
 ## Daemon Control
 
 | Flag | Description |
 |------|-------------|
-| `--daemon` | Start the daemon process (foreground) |
-| `--toggle-gd-auto-clip` | Toggle clipboard monitoring (auto-starts daemon) |
-| `--toggle-gd-auto-focus` | Toggle GoldenDict auto-focus feature |
-| `--gd-clip` | Cycle to next GD dictionary group for current word |
-| `--clip <TEXT>` | Override clipboard content for --gd-clip |
+| `--daemon` | Start the daemon process in the foreground |
+| `--toggle-gd-auto-clip` | Toggle clipboard monitoring (auto-starts daemon if not running) |
+| `--toggle-gd-auto-focus` | Toggle GoldenDict auto-focus feature (daemon must be running) |
+| `--gd-clip` | Cycle to next GD dictionary group for current word (auto-starts daemon if not running) |
+| `--clip <TEXT>` | Override clipboard content for `--gd-clip` |
+| `--serve` | Start web UI server (not yet implemented) |
+
+Note: `--toggle-gd-auto-clip` and `--gd-clip` will auto-start the daemon in the
+background if it is not running. `--toggle-gd-auto-focus` requires the daemon to
+already be running.
 
 ## Examples
 
@@ -109,7 +107,7 @@ corpora-atlas --mw https://fr.wikipedia.org/w Philosophy
 ```sh
 # Extract all GD dictionaries, one file each, with headers
 corpora-atlas --gd -a -m -n "hello"
-# Output: /tmp/corpus/hello/gd/<dict_name>.txt
+# Output: <paths.output>/hello/gd/<dict>.txt
 ```
 
 ### Lean reading
@@ -131,13 +129,13 @@ corpora-atlas --kiwix -z wikisource-en --lean-section _lead "Philosophy"
 ### Daemon
 
 ```sh
-# Start daemon
+# Start daemon (monitoring starts disabled)
 corpora-atlas --daemon &
 
-# Toggle clipboard monitoring
+# Enable clipboard monitoring
 corpora-atlas --toggle-gd-auto-clip
 
-# Cycle groups
+# Cycle groups for current clipboard word
 corpora-atlas --gd-clip
 
 # Cycle with custom text
