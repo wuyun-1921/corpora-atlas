@@ -15,6 +15,13 @@ impl MediaWikiBackend {
     }
 
     fn base_url(&self) -> Option<String> {
+        // Direct URL: use as-is (strip trailing /api.php if present)
+        if self.site.contains("://") {
+            let url = self.site.trim_end_matches('/');
+            let url = url.strip_suffix("/api.php").unwrap_or(url);
+            return Some(url.to_string());
+        }
+        // Config lookup
         crate::config::Config::global()
             .mediawiki
             .sites

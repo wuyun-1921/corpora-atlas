@@ -50,14 +50,15 @@ pub async fn notify(app_name: &str, message: &str, always: bool) {
     }
     let _ = tokio::process::Command::new("notify-send")
         .arg("-t")
-        .arg("1000")
+        .arg("3000")
         .arg("-a")
         .arg("corpora-atlas")
         .arg(app_name)
         .arg(message)
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())
-        .spawn();
+        .status()
+        .await;
 }
 
 pub async fn gd_lookup(query: &str, group: &str) {

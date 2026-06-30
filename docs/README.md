@@ -58,7 +58,7 @@ corpora-atlas --mw en.wikipedia Philosophy
 corpora-atlas --daemon &
 
 # Toggle clipboard monitoring on/off
-corpora-atlas --toggle
+corpora-atlas --toggle-clipboard
 
 # Cycle through dictionary groups for current word
 corpora-atlas --cycle

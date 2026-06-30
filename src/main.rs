@@ -7,13 +7,13 @@ async fn main() -> anyhow::Result<()> {
     let args = <Cli as clap::Parser>::parse();
 
     if let Err(e) = config::Config::init() {
-        if !args.daemon && !args.toggle && !args.cycle && !args.toggle_focus {
+        if !args.daemon && !args.toggle_clipboard && !args.cycle && !args.toggle_focus {
             eprintln!("Error: {e}");
             std::process::exit(1);
         }
     }
 
-    if args.toggle {
+    if args.toggle_clipboard {
         let resp = ipc::send_daemon("toggle", None).await;
         match resp {
             Ok(v) => {

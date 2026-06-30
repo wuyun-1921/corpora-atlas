@@ -42,7 +42,7 @@ pub struct Cli {
     #[arg(short = 's')]
     pub aard2_slob: Option<String>,
 
-    // MediaWiki
+    // MediaWiki — site key from config or any URL with /api.php
     #[arg(long)]
     pub mw: Option<String>,
     #[arg(long)]
@@ -64,7 +64,7 @@ pub struct Cli {
     #[arg(long)]
     pub daemon: bool,
     #[arg(long)]
-    pub toggle: bool,
+    pub toggle_clipboard: bool,
     #[arg(long)]
     pub toggle_focus: bool,
     #[arg(long)]

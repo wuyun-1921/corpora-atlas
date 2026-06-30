@@ -37,8 +37,8 @@ Unix socket at `config.paths.socket`. JSON protocol, newline-delimited.
 ### Client Usage
 
 ```sh
-# Toggle monitoring
-corpora-atlas --toggle
+# Toggle clipboard monitoring
+corpora-atlas --toggle-clipboard
 
 # Cycle groups
 corpora-atlas --cycle

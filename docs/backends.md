@@ -86,7 +86,7 @@ Queries MediaWiki sites via their `api.php` REST API.
 
 ### Flow
 
-1. Resolves site key via config (`en.wikipedia` -> `https://en.wikipedia.org/w`)
+1. Resolves site: if `--mw` value contains `://`, uses it directly as base URL; otherwise looks up config key (`en.wikipedia` -> `https://en.wikipedia.org/w`)
 2. Depending on mode:
    - **Parse** (default): `action=parse&prop=text&page={query}` - full article HTML
    - **Search** (`--mw-search`): `action=query&list=search` - up to 50 results

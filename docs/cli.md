@@ -17,7 +17,7 @@ corpora-atlas [FLAGS] [OPTIONS] <QUERY>...
 | `--gd` | Use GoldenDict backend |
 | `--kiwix` | Use Kiwix backend |
 | `--aard2` | Use Aard2 backend |
-| `--mw <SITE>` | Use MediaWiki backend (site key from config) |
+| `--mw <SITE>` | Use MediaWiki backend (site key from config, or any URL) |
 
 If no backend flag is given, runs GoldenDict in catalog mode (lists dictionary names).
 
@@ -53,7 +53,7 @@ Multiple backends can be combined; they execute sequentially.
 
 | Flag | Description |
 |------|-------------|
-| `--mw <SITE>` | MediaWiki site key (from config `mediawiki.sites`) |
+| `--mw <SITE>` | MediaWiki site key (from config) or any MediaWiki URL |
 | `--mw-search` | Use search API instead of page parse |
 | `--mw-page <N>` | Page number for search results (default: 1) |
 
@@ -71,7 +71,7 @@ Multiple backends can be combined; they execute sequentially.
 | Flag | Description |
 |------|-------------|
 | `--daemon` | Start the daemon process (foreground) |
-| `--toggle` | Toggle clipboard monitoring (auto-starts daemon) |
+| `--toggle-clipboard` | Toggle clipboard monitoring (auto-starts daemon) |
 | `--toggle-focus` | Toggle GoldenDict auto-focus feature |
 | `--cycle` | Cycle to next GD dictionary group for current word |
 | `--clip <TEXT>` | Override clipboard content for --cycle |
@@ -96,9 +96,12 @@ corpora-atlas --kiwix -z wikisource-en hello
 # Aard2
 corpora-atlas --aard2 -s enwiki hello
 
-# MediaWiki
+# MediaWiki with config key
 corpora-atlas --mw en.wikipedia Philosophy
 corpora-atlas --mw en.wikipedia --mw-search "quantum physics"
+
+# MediaWiki with any URL
+corpora-atlas --mw https://fr.wikipedia.org/w Philosophy
 ```
 
 ### Multi-file extraction
@@ -131,8 +134,8 @@ corpora-atlas --kiwix -z wikisource-en --lean-section _lead "Philosophy"
 # Start daemon
 corpora-atlas --daemon &
 
-# Toggle monitoring
-corpora-atlas --toggle
+# Toggle clipboard monitoring
+corpora-atlas --toggle-clipboard
 
 # Cycle groups
 corpora-atlas --cycle
