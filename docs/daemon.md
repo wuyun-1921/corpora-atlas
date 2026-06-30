@@ -32,7 +32,7 @@ Unix socket at `config.paths.socket`. JSON protocol, newline-delimited.
 
 | Action | Extra Fields | Response Fields | Description |
 |--------|-------------|-----------------|-------------|
-| `cycle` | `clip` (optional) | `status` | Cycle to next GD dictionary group |
+| `cycle` | `clip` (optional) | `status` | Read clipboard word, look it up in GD, cycle dictionary group |
 | `toggle` | | `status`, `monitoring` | Toggle clipboard monitoring on/off |
 | `toggle_focus` | | `status`, `focus_gd` | Toggle auto-focus GD window |
 
@@ -87,7 +87,8 @@ JSON file at `config.paths.state`, protected by `flock`:
 
 ## Cycle Logic
 
-The cycle command (`--gd-clip` or IPC `cycle`) implements smart group switching.
+The cycle command (`--gd-clip` or IPC `cycle`) reads a clipboard word, looks it
+up in GoldenDict, and cycles the dictionary group on repeated lookups.
 
 CDP = Chrome DevTools Protocol, used to read GoldenDict's active group.
 
@@ -99,13 +100,12 @@ English words use whatever group GD is already on.
 ### Non-English text
 
 1. Reads current GD group from CDP
-2. If query is new (different from `prev_query`): resets `repeat` to 0, selects
-   `chain[0]` (first group in the fallback chain)
-3. If same query as before:
-   - If GD's current group differs from daemon state: respects GD's group, then
-     advances to the next group in the chain
-   - If GD's group matches daemon state: advances through the fallback chain
-   - If GD's group is not in the chain at all: adopts GD's group without advancing
+2. If GD's group was changed externally (differs from daemon state):
+   - **New query**: resets to `chain[0]` (first group in fallback chain)
+   - **Same query, GD group is in chain**: advances from GD's position in chain
+   - **Same query, GD group NOT in chain**: adopts GD's group without cycling
+3. If GD's group matches daemon state (or is empty): advances through the
+   fallback chain via `advance()`
 4. `advance()` increments `repeat` only when query matches `prev_query`; resets
    to 0 on new queries. Selects `chain[repeat % chain.len()]`.
 
