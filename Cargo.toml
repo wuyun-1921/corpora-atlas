@@ -3,6 +3,8 @@ name = "corpora-atlas"
 version = "1.0.0"
 edition = "2024"
 description = "Unified terminal-based lookup tool for dictionaries, encyclopedias, and wikis"
+license = "MIT"
+repository = "https://github.com/wuyun-1921/corpora-atlas"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
