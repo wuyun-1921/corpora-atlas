@@ -7,6 +7,11 @@ that monitors your clipboard and auto-looks up words in GoldenDict.
 
 **Platform:** Linux (Wayland) only. Requires `wl-paste` (clipboard) and `wlrctl` (window focus).
 
+macOS and Windows support is feasible — the only platform-specific code is clipboard
+access and window focus, which could be swapped with native equivalents (NSPasteboard
+on macOS, Win32 clipboard APIs on Windows). Not planned, but low-effort ports for
+anyone who needs them.
+
 Pre-built x86_64 and aarch64 Linux binaries available in [releases](https://github.com/wuyun-1921/corpora-atlas/releases).
 
 ## Install
