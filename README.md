@@ -5,7 +5,9 @@ Unified terminal-based lookup tool for GoldenDict-ng, Aard2-web, Kiwix-serve, an
 Queries multiple offline/online backends from the command line, or runs as a daemon
 that monitors your clipboard and auto-looks up words in GoldenDict.
 
-**Platform:** Linux (Wayland) — uses `wl-paste` and `wlrctl`.
+**Platform:** Linux (Wayland) only. Requires `wl-paste` (clipboard) and `wlrctl` (window focus).
+
+Pre-built x86_64 and aarch64 Linux binaries available in [releases](https://github.com/wuyun-1921/corpora-atlas/releases).
 
 ## Install
 
@@ -13,8 +15,6 @@ that monitors your clipboard and auto-looks up words in GoldenDict.
 cargo build --release
 cp target/release/corpora-atlas ~/.local/bin/
 ```
-
-Pre-built binaries available in [releases](https://github.com/wuyun-1921/corpora-atlas/releases).
 
 ## Quick Start
 
@@ -61,7 +61,8 @@ corpora-atlas CLI
 | GoldenDict-ng | `--gd` and daemon mode |
 | kiwix-serve | `--kiwix` backend |
 | aard2-web | `--aard2` backend |
-| `wl-paste` / `wlrctl` | daemon clipboard + window focus |
+| `wl-paste` | Wayland clipboard access |
+| `wlrctl` | Wayland window focus (auto-focus GoldenDict) |
 | `notify-send` | desktop notifications |
 
 ## Backends

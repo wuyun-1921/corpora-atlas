@@ -15,10 +15,6 @@ jobs:
         include:
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
-          - target: x86_64-pc-windows-msvc
-            os: windows-latest
-          - target: aarch64-apple-darwin
-            os: macos-latest
           - target: aarch64-unknown-linux-gnu
             os: ubuntu-24.04-arm
 
@@ -36,18 +32,10 @@ jobs:
       - name: Build release
         run: cargo build --release --target ${{ matrix.target }}
 
-      - name: Package (Unix)
-        if: matrix.os != 'windows-latest'
+      - name: Package
         run: |
           cd target/${{ matrix.target }}/release
           tar czf ../../../corpora-atlas-${{ matrix.target }}.tar.gz corpora-atlas
-          cd ../../..
-
-      - name: Package (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          cd target/${{ matrix.target }}/release
-          7z a ../../../corpora-atlas-${{ matrix.target }}.zip corpora-atlas.exe
           cd ../../..
 
       - name: Upload artifact
@@ -90,4 +78,3 @@ jobs:
             ${{ steps.changelog.outputs.changelog }}
           files: |
             corpora-atlas-*.tar.gz
-            corpora-atlas-*.zip
