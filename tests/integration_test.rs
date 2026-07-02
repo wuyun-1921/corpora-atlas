@@ -28,9 +28,9 @@ fn test_strip_query_empty() {
 
 #[test]
 fn test_lang_detect_english() {
-    assert_eq!(Script::detect("hello"), Script::English);
-    assert_eq!(Script::detect("World"), Script::English);
-    assert_eq!(Script::detect("test123"), Script::English);
+    assert_eq!(Script::detect("hello"), Script::Latin);
+    assert_eq!(Script::detect("World"), Script::Latin);
+    assert_eq!(Script::detect("test123"), Script::Latin);
 }
 
 #[test]

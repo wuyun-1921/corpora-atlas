@@ -3,6 +3,7 @@ use async_trait::async_trait;
 use super::{Backend, BackendOutput, QueryOptions};
 use crate::error::{Error, Result};
 
+#[derive(Default)]
 pub struct Aard2Backend;
 
 impl Aard2Backend {

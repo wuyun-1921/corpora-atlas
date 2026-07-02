@@ -53,12 +53,18 @@ async fn main() -> anyhow::Result<()> {
         if !socket_path.exists() {
             tokio::spawn(async {
                 let d = daemon::Daemon::new();
-                let _ = d.run().await;
+                if let Err(e) = d.run().await {
+                    eprintln!("daemon error: {e}");
+                }
             });
             tokio::time::sleep(std::time::Duration::from_millis(500)).await;
-            for _ in 0..10 {
+            for i in 0..10 {
                 if socket_path.exists() {
                     break;
+                }
+                if i == 9 {
+                    eprintln!("Error: daemon failed to start after 1.5s — check daemon error output above");
+                    std::process::exit(1);
                 }
                 tokio::time::sleep(std::time::Duration::from_millis(100)).await;
             }

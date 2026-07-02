@@ -61,12 +61,12 @@ gd:
 # ── Language → group chains ─────────────────────────────────────────
 #
 # When the daemon detects a clipboard change or the user presses the cycle
-# keybind, lang.py's triage() inspects the word's Unicode range and returns
+# keybind, lang.rs's triage() inspects the word's Unicode range and returns
 # a primary key (e.g. "chinese"). The daemon routes the word through the
 # corresponding chain, always starting at chain[0] on auto-lookup.
 #
-# The fallback chains below are consumed by lang.py → tokens.get_all_fallbacks().
-# Keys must match the names returned by triage() (see lang.py source). If a
+# The fallback chains below are consumed by lang.rs → tokens::get_fallbacks().
+# Keys must match the names returned by triage() (see lang.rs source). If a
 # script family has no dedicated triage branch, it falls through to "other".
 #
 # Every value is a fabricated placeholder group name — replace with your
@@ -95,14 +95,14 @@ fallback:
   # Hebrew (0x0590–0x05FF) and Syriac (0x0700–0x074F) also route here.
 #   NOTE: lang.rs currently lacks dedicated _in_range() checks for Semitic
   # scripts — they fall through to "other" below. To activate this chain,
-  # add Arabic + Hebrew ranges to lang.py and a triage() branch.
+  # add Arabic + Hebrew ranges to lang.rs and a triage() branch.
   semitic:   [AR, HE]
 
   # Brahmic family: Devanagari (0x0900–0x097F), Bengali (0x0980–0x09FF),
   # Gurmukhi (0x0A00–0x0A7F), Tamil (0x0B80–0x0BFF), etc.
 #   NOTE: lang.rs currently routes all Brahmic scripts through the "other"
   # catch-all (cp > 0x0600 in is_alpha). To activate per-script chains,
-  # add the ranges to lang.py and dedicated triage() branches.
+  # add the ranges to lang.rs and dedicated triage() branches.
   brahmic:   [DV, BN, TM]
 
   # Catch-all for everything else (symbols, emoji, unsupported scripts).

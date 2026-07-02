@@ -23,32 +23,32 @@ pub async fn cmd_next(clip_override: &str) {
         return;
     }
 
-    let mut state = DaemonState::load().unwrap_or_default();
-    let current_group = state.group.clone();
+    let current_group = DaemonState::load().map(|s| s.group).unwrap_or_default();
     let gd_backend = crate::backends::gd::GdBackend;
     let gd_group = gd_backend.get_current_group().await.unwrap_or_default();
 
-    let group = if !gd_group.is_empty() && gd_group != current_group {
-        if query != state.prev_query {
-            state.prev_query = query.clone();
-            state.repeat = 0;
-            state.group = chain.first().cloned().unwrap_or_default();
-            state.group.clone()
-        } else if chain.contains(&gd_group) {
-            let idx = chain.iter().position(|g| *g == gd_group).unwrap_or(0);
-            state.repeat = idx + 1;
-            state.group = chain[(idx + 1) % chain.len()].clone();
-            state.group.clone()
+    let mut group = String::new();
+    let _ = DaemonState::update(|state| {
+        group = if !gd_group.is_empty() && gd_group != current_group {
+            if query != state.prev_query {
+                state.prev_query = query.clone();
+                state.repeat = 0;
+                state.group = chain.first().cloned().unwrap_or_default();
+                state.group.clone()
+            } else if chain.contains(&gd_group) {
+                let idx = chain.iter().position(|g| *g == gd_group).unwrap_or(0);
+                state.repeat = idx + 1;
+                state.group = chain[(idx + 1) % chain.len()].clone();
+                state.group.clone()
+            } else {
+                state.group = gd_group.clone();
+                state.group.clone()
+            }
         } else {
-            state.group = gd_group.clone();
+            state.advance(&query, &chain);
             state.group.clone()
-        }
-    } else {
-        state.advance(&query, &chain);
-        state.group.clone()
-    };
-
-    let _ = state.save();
+        };
+    });
     clipboard::gd_lookup(&query, &group).await;
     clipboard::focus_gd().await;
 }

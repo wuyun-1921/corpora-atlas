@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
+use std::sync::LazyLock;
 
 use async_trait::async_trait;
 use futures_util::SinkExt;
@@ -11,6 +12,14 @@ use tokio_tungstenite::connect_async;
 use super::{Backend, BackendOutput, QueryOptions};
 use crate::error::{Error, Result};
 use crate::html::strip::strip_html;
+
+static TITLE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"<span class="gddicttitle">(.*?)</span>"#).unwrap()
+});
+
+static GROUP_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"<group\s+id="(\d+)"\s+name="([^"]*)"\s*/>"#).unwrap()
+});
 
 pub struct GdBackend;
 
@@ -26,16 +35,21 @@ impl GdBackend {
         &crate::config::Config::global().gd
     }
 
+    fn cdp_host(&self) -> &str {
+        let addr = &crate::config::Config::global().servers.gd_cdp;
+        addr.split(':').next().unwrap_or("localhost")
+    }
+
     fn cdp_port(&self) -> u16 {
         let addr = &crate::config::Config::global().servers.gd_cdp;
-        addr.split(':')
-            .last()
+        addr.rsplit(':')
+            .next()
             .and_then(|p| p.parse().ok())
             .unwrap_or(18123)
     }
 
     async fn discover_targets(&self) -> Result<Vec<CdpTarget>> {
-        let url = format!("http://localhost:{}/json/list", self.cdp_port());
+        let url = format!("http://{}:{}/json/list", self.cdp_host(), self.cdp_port());
         let client = reqwest::Client::new();
         let resp = client
             .get(&url)
@@ -55,7 +69,7 @@ impl GdBackend {
     }
 
     async fn extract_page(&self, target_id: &str) -> Result<String> {
-        let ws_url = format!("ws://localhost:{}/devtools/page/{target_id}", self.cdp_port());
+        let ws_url = format!("ws://{}:{}/devtools/page/{target_id}", self.cdp_host(), self.cdp_port());
         let (ws, _) = connect_async(&ws_url)
             .await
             .map_err(|e| Error::Cdp(format!("WS connect failed: {e}")))?;
@@ -71,11 +85,14 @@ impl GdBackend {
             .map_err(|e| Error::Cdp(format!("WS send failed: {e}")))?;
 
         loop {
-            let msg = read
-                .next()
-                .await
-                .ok_or_else(|| Error::Cdp("no response for Runtime.enable".into()))?
-                .map_err(|e| Error::Cdp(format!("WS recv failed: {e}")))?;
+            let msg = tokio::time::timeout(
+                std::time::Duration::from_secs(self.config().cdp_timeout),
+                read.next(),
+            )
+            .await
+            .map_err(|_| Error::Cdp("CDP timeout".into()))?
+            .ok_or_else(|| Error::Cdp("no response for Runtime.enable".into()))?
+            .map_err(|e| Error::Cdp(format!("WS recv failed: {e}")))?;
             let text = msg.to_text().unwrap_or("{}").to_string();
             let v: serde_json::Value =
                 serde_json::from_str(&text).map_err(|e| Error::Cdp(format!("JSON parse: {e}")))?;
@@ -100,11 +117,14 @@ impl GdBackend {
             .map_err(|e| Error::Cdp(format!("WS send failed: {e}")))?;
 
         loop {
-            let msg = read
-                .next()
-                .await
-                .ok_or_else(|| Error::Cdp("no response for Runtime.evaluate".into()))?
-                .map_err(|e| Error::Cdp(format!("WS recv failed: {e}")))?;
+            let msg = tokio::time::timeout(
+                std::time::Duration::from_secs(self.config().cdp_timeout),
+                read.next(),
+            )
+            .await
+            .map_err(|_| Error::Cdp("CDP timeout".into()))?
+            .ok_or_else(|| Error::Cdp("no response for Runtime.evaluate".into()))?
+            .map_err(|e| Error::Cdp(format!("WS recv failed: {e}")))?;
             let text = msg.to_text().unwrap_or("{}").to_string();
             let v: serde_json::Value =
                 serde_json::from_str(&text).map_err(|e| Error::Cdp(format!("JSON parse: {e}")))?;
@@ -126,13 +146,15 @@ impl GdBackend {
         }
         let rest = parts[1];
         for chunk in rest.split(r#"<article class="gdarticle"#) {
-            let title_re = Regex::new(r#"<span class="gddicttitle">(.*?)</span>"#).unwrap();
-            let name = title_re
+            let name = TITLE_RE
                 .captures(chunk)
                 .and_then(|c| c.get(1))
                 .map(|m| html_escape::decode_html_entities(m.as_str()).to_string())
                 .unwrap_or_else(|| "unknown".to_string());
-            let sec_start = chunk.find("<section").unwrap_or(0);
+            let sec_start = chunk.find("<section")
+                .or_else(|| chunk.find("<body"))
+                .or_else(|| chunk.find("<div"))
+                .unwrap_or(0);
             let content = chunk[sec_start..].to_string();
             results.push((name, content));
         }
@@ -149,8 +171,7 @@ impl GdBackend {
             Ok(c) => c,
             Err(_) => return map,
         };
-        let re = Regex::new(r#"<group\s+id="(\d+)"\s+name="([^"]*)"\s*/>"#).unwrap();
-        for cap in re.captures_iter(&content) {
+        for cap in GROUP_RE.captures_iter(&content) {
             map.insert(cap[1].to_string(), cap[2].to_string());
         }
         map

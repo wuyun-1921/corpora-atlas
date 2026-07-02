@@ -48,7 +48,7 @@ pub async fn notify(app_name: &str, message: &str, always: bool) {
             }
         }
     }
-    let _ = tokio::process::Command::new("notify-send")
+    let result = tokio::process::Command::new("notify-send")
         .arg("-t")
         .arg("3000")
         .arg("-a")
@@ -59,6 +59,9 @@ pub async fn notify(app_name: &str, message: &str, always: bool) {
         .stderr(std::process::Stdio::null())
         .status()
         .await;
+    if let Err(e) = result {
+        eprintln!("notify-send failed: {e}");
+    }
 }
 
 pub async fn gd_lookup(query: &str, group: &str) {

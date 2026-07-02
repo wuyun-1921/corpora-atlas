@@ -3,8 +3,16 @@ pub mod clipboard;
 pub mod gd_clip;
 
 use crate::error::Result;
+use tokio::sync::mpsc;
 
+#[derive(Default)]
 pub struct Daemon;
+
+struct ClipboardEvent {
+    query: String,
+    group: String,
+    should_focus: bool,
+}
 
 impl Daemon {
     pub fn new() -> Self {
@@ -23,33 +31,41 @@ impl Daemon {
             crate::config::Config::global().daemon.poll_interval,
         );
 
-        let mut interval = tokio::time::interval(poll_interval);
-        let mut prev_clip = String::new();
+        // Clipboard polling runs in a spawned task to avoid blocking IPC.
+        // Results are sent via mpsc channel, keeping the select! loop responsive.
+        let (clip_tx, mut clip_rx) = mpsc::channel::<ClipboardEvent>(8);
+        tokio::spawn(async move {
+            let mut interval = tokio::time::interval(poll_interval);
+            let mut prev_clip = String::new();
+            loop {
+                interval.tick().await;
+                let state = crate::state::DaemonState::load().ok();
+                let monitoring = state.as_ref().map(|s| s.monitoring).unwrap_or(false);
+                if !monitoring {
+                    continue;
+                }
+                let clip = clipboard::read_clipboard().await;
+                if clip == prev_clip || clip.is_empty() {
+                    continue;
+                }
+                prev_clip = clip;
+                let query = match clipboard::prepare_query(&prev_clip) {
+                    Some(q) => q,
+                    None => continue,
+                };
+                let (_script, chain) = crate::lang::triage(&query);
+                let group = chain.first().cloned().unwrap_or_default();
+                let should_focus = state.map(|s| s.focus_gd).unwrap_or(false);
+                let _ = clip_tx.send(ClipboardEvent { query, group, should_focus }).await;
+            }
+        });
 
         loop {
             tokio::select! {
-                _ = interval.tick() => {
-                    let state = crate::state::DaemonState::load().ok();
-                    let monitoring = state.map(|s| s.monitoring).unwrap_or(false);
-                    if !monitoring {
-                        continue;
-                    }
-                    let clip = clipboard::read_clipboard().await;
-                    if clip == prev_clip || clip.is_empty() {
-                        continue;
-                    }
-                    prev_clip = clip;
-                    let query = match clipboard::prepare_query(&prev_clip) {
-                        Some(q) => q,
-                        None => continue,
-                    };
-                    let (_script, chain) = crate::lang::triage(&query);
-                    let group = chain.first().cloned().unwrap_or_default();
-                    clipboard::gd_lookup(&query, &group).await;
-                    if let Ok(s) = crate::state::DaemonState::load() {
-                        if s.focus_gd {
-                            clipboard::focus_gd().await;
-                        }
+                Some(ev) = clip_rx.recv() => {
+                    clipboard::gd_lookup(&ev.query, &ev.group).await;
+                    if ev.should_focus {
+                        clipboard::focus_gd().await;
                     }
                 }
                 accept = listener.accept() => {

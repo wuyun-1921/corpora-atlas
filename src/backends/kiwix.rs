@@ -4,17 +4,16 @@ use regex::Regex;
 use super::{Backend, BackendOutput, QueryOptions};
 use crate::error::{Error, Result};
 use crate::html::strip::strip_html;
-use crate::tokens;
 
 pub struct KiwixBackend {
     zim_name: String,
 }
 
 impl KiwixBackend {
-    pub fn new(zim_shorthand: &str) -> Self {
-        let zim = tokens::resolve_zim(zim_shorthand);
+    /// `zim_name` is expected to already be resolved (caller handled shorthand lookup).
+    pub fn new(zim_name: &str) -> Self {
         Self {
-            zim_name: zim.to_string(),
+            zim_name: zim_name.to_string(),
         }
     }
 }

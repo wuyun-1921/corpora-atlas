@@ -1,5 +1,6 @@
 use clap::Parser;
 use regex::Regex;
+use std::sync::LazyLock;
 
 use crate::backends::{
     aard2::Aard2Backend, gd::GdBackend, kiwix::KiwixBackend, mediawiki::MediaWikiBackend,
@@ -99,6 +100,10 @@ fn apply_lean(content: &str, args: &Cli) -> Option<String> {
     Some(content.to_string())
 }
 
+static FILENAME_SANITIZE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"[^a-zA-Z0-9\u4e00-\u9fff _-]").unwrap()
+});
+
 fn write_output(query: &str, backend: &str, output: &BackendOutput) -> Result<String> {
     let outdir = crate::config::Config::global().paths.output.join(query).join(backend);
     std::fs::create_dir_all(&outdir).map_err(|e| Error::Io(e))?;
@@ -106,9 +111,7 @@ fn write_output(query: &str, backend: &str, output: &BackendOutput) -> Result<St
     match output {
         BackendOutput::Multi(map) => {
             for (name, text) in map {
-                let safe = Regex::new(r"[^a-zA-Z0-9\u4e00-\u9fff _-]")
-                    .unwrap()
-                    .replace_all(name, "");
+                let safe = FILENAME_SANITIZE_RE.replace_all(name, "");
                 let safe: String = safe.chars().take(40).collect();
                 let safe = safe.trim().replace(' ', "_");
                 std::fs::write(outdir.join(format!("{safe}.txt")), text)
@@ -231,7 +234,7 @@ async fn run_aard2(args: &Cli, query: &str, as_html: bool) -> Result<()> {
 }
 
 async fn run_mediawiki(args: &Cli, query: &str, _as_html: bool) -> Result<()> {
-    let site = args.mw.as_deref().unwrap_or("en.wikipedia");
+    let site = args.mw.as_deref().expect("mw should be Some");
     let backend = MediaWikiBackend::new(site);
 
     let mut opts = QueryOptions { as_html: true, ..Default::default() };

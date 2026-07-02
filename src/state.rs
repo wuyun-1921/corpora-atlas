@@ -41,6 +41,7 @@ impl DaemonState {
             .create(true)
             .write(true)
             .read(true)
+            .truncate(true)
             .open(path)
             .map_err(|e| Error::Io(e))?;
         file.lock_exclusive().map_err(|e| Error::Io(e))?;
@@ -72,6 +73,32 @@ impl DaemonState {
         std::fs::write(&state_path, content)
             .map_err(|e| Error::Io(e))?;
         Ok(())
+    }
+
+    /// Atomically read, mutate, and write state under a single flock.
+    pub fn update<F>(f: F) -> Result<Self>
+    where
+        F: FnOnce(&mut DaemonState),
+    {
+        let (state_path, lock_path) = Self::paths();
+        let _lock = Self::lock_file(&lock_path)?;
+        let mut state = if state_path.exists() {
+            let content = std::fs::read_to_string(&state_path)
+                .map_err(|e| Error::Io(e))?;
+            if content.trim().is_empty() {
+                DaemonState::default()
+            } else {
+                serde_json::from_str(&content).unwrap_or_default()
+            }
+        } else {
+            DaemonState::default()
+        };
+        f(&mut state);
+        let content = serde_json::to_string_pretty(&state)
+            .map_err(|e| Error::Json(e))?;
+        std::fs::write(&state_path, content)
+            .map_err(|e| Error::Io(e))?;
+        Ok(state)
     }
 
     pub fn advance(&mut self, query: &str, chain: &[String]) -> usize {
